@@ -44,7 +44,7 @@ ALLON="FF"   # hex value to turn all relays on
 ADDR="0x27"  # i2c address of relay module (can be changed with dip switches
 	     #  from 0x27 - 0x3F -- confirm the system sees the board using
 	     #  'i2cdetect -y 1' if using bus 1)
-BUS=1	     # i2c bus number -- list available buses with 'i2cdetect -l'
+BUS=19	     # i2c bus number -- list available buses with 'i2cdetect -l'
 
 # State file: (relay status cannot be read from chip, so save state in a file)
 # If controlling multiple relay boards, these file locations must be unique:
@@ -108,12 +108,9 @@ else
 		    /usr/sbin/i2cset -y $BUS $ADDR 0x$HEXSTATESTR
 		    ;; # done enabling a relay
 		"off")
-		    (( BMASK = $((AMASK)) ))
-		    (( BMASK ^= 255 )) # need to flip the bitmask first
-
 		    # use an AND with a negative bit mask to disable only the
 		    #  bit for the desired relay and leave others unmodified
-		    (( STATE &= $((BMASK)) ))
+		    (( STATE &= $((~ AMASK & 255)) ))
 		    echo -n $((STATE)) > $STATEFILE
 		    printf -v HEXSTATESTR '%x' $STATE # need to make a text
 		        # string of the new state in order to call i2cset:
